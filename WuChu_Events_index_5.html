@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WuChu Events">
+<title>WuChu — Event Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --chu:#2B5BB8;--chu-light:#EEF3FB;--chu-mid:#C5D5F2;
+  --wu:#A81C1C;--wu-light:#FAEAEA;--wu-mid:#F0C0C0;
+  --ink:#1A1A1A;--ink2:#444;--ink3:#777;--ink4:#AAA;
+  --line:#E5E5E5;--surface:#F5F5F5;--white:#FFF;
+  --warn-bg:#FFFBEA;--warn-border:#F0D060;--warn-text:#7A5800;
+  --flag-bg:#FEF2F2;--flag-border:#FECACA;--flag-text:#991B1B;
+  --ok-bg:#F0FAF4;--ok-border:#A7D7B8;--ok-text:#166534;
+  --purple-bg:#F5F3FF;--purple-border:#C4B5FD;--purple-text:#5B21B6;
+  --radius:10px;--nav-h:56px;--bottom-h:60px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--surface);color:var(--ink);font-size:15px;line-height:1.5;overflow:hidden}
+.login-screen{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:24px}
+.login-screen.hidden{display:none}
+.login-logo{font-family:'Playfair Display',serif;font-size:32px;font-weight:600;color:#fff;margin-bottom:6px}
+.login-sub{font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:40px}
+.login-card{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:340px}
+.login-card h2{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.login-card p{font-size:13px;color:var(--ink3);margin-bottom:20px}
+.user-list{display:flex;flex-direction:column;gap:8px}
+.user-btn{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:var(--radius);background:var(--white);cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;transition:all .15s}
+.user-btn:hover{border-color:var(--ink3)}.user-btn:active{transform:scale(.98)}
+.user-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0}
+.av-1{background:#6B7280}.av-2{background:#2B5BB8}.av-3{background:#A81C1C}
+.user-info{flex:1}.user-name{font-size:14px;font-weight:500;color:var(--ink)}.user-role{font-size:11px;color:var(--ink3)}
+.user-level{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--ink3);background:var(--surface)}
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px}
+.pin-overlay.hidden{display:none}
+.pin-card{background:var(--white);border-radius:16px;padding:28px 24px;width:100%;max-width:320px;text-align:center}
+.pin-card h3{font-size:16px;font-weight:600;margin-bottom:4px}.pin-card p{font-size:13px;color:var(--ink3);margin-bottom:20px}
+.pin-dots{display:flex;gap:10px;justify-content:center;margin-bottom:24px}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--line);transition:background .15s}.pin-dot.filled{background:var(--ink)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pin-key{padding:14px;border:1.5px solid var(--line);border-radius:var(--radius);font-size:18px;font-weight:500;background:var(--white);cursor:pointer;transition:all .1s;color:var(--ink)}
+.pin-key:active{background:var(--surface);transform:scale(.95)}.pin-key.del{font-size:14px;color:var(--ink3)}
+.pin-error{font-size:13px;color:var(--flag-text);margin-top:8px;min-height:18px}
+.pin-cancel{font-size:13px;color:var(--ink3);background:none;border:none;cursor:pointer;margin-top:4px;padding:8px}
+.shell{display:flex;flex-direction:column;height:100vh;height:100dvh}
+.admin-bar{background:var(--ink);color:#fff;padding:8px 16px;font-size:12px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.admin-bar.hidden{display:none}
+.admin-bar span{flex:1;opacity:.6}
+.admin-btn{font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-weight:500}
+.admin-btn:hover{background:rgba(255,255,255,.2)}
+.topbar{height:var(--nav-h);display:flex;align-items:center;background:var(--white);border-bottom:1px solid var(--line);flex-shrink:0;z-index:20}
+.back-btn{display:none;align-items:center;justify-content:center;width:44px;height:44px;background:none;border:none;cursor:pointer;color:var(--ink2);flex-shrink:0}
+.back-btn svg{width:20px;height:20px}
+.brand{display:flex;flex-direction:column;justify-content:center;padding:0 16px;flex:1;min-width:0}
+.brand-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand-sub{font-size:10px;color:var(--ink3);font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:6px;padding-right:12px;flex-shrink:0}
+.access-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px}
+.ab-1{background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB}
+.ab-2{background:var(--chu-light);color:var(--chu);border:1px solid var(--chu-mid)}
+.ab-3{background:var(--wu-light);color:var(--wu);border:1px solid var(--wu-mid)}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+.icon-btn:hover{background:var(--surface)}.icon-btn svg{width:18px;height:18px}
+.venue-switcher{display:flex;gap:6px;padding:0 12px 0 0}
+.vs-btn{padding:5px 12px;font-size:12px;font-weight:500;border-radius:20px;border:1.5px solid var(--line);background:var(--white);color:var(--ink3);cursor:pointer;transition:all .15s;white-space:nowrap}
+.vs-btn:hover{border-color:var(--ink3);color:var(--ink)}
+.vs-btn.vs-chu{background:var(--chu);border-color:var(--chu);color:#fff}
+.vs-btn.vs-wu{background:var(--wu);border-color:var(--wu);color:#fff}
+.vs-btn.vs-ov{background:var(--surface);border-color:var(--ink3);color:var(--ink)}
+.body{display:flex;flex:1;overflow:hidden;position:relative}
+.sidebar{width:210px;flex-shrink:0;border-right:1px solid var(--line);background:var(--white);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-hdr{padding:10px 14px 6px;border-bottom:1px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.sidebar-hdr-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.sidebar-switch{display:flex;gap:4px}
+.ss-btn{padding:3px 8px;font-size:11px;font-weight:500;border-radius:12px;border:1px solid var(--line);background:var(--white);color:var(--ink3);cursor:pointer;transition:all .12s}
+.ss-btn.ss-chu{background:var(--chu);border-color:var(--chu);color:#fff}
+.ss-btn.ss-wu{background:var(--wu);border-color:var(--wu);color:#fff}
+.event-list{flex:1;overflow-y:auto;padding:4px 0}
+.event-list::-webkit-scrollbar{width:3px}.event-list::-webkit-scrollbar-thumb{background:var(--line)}
+.evt-btn{width:100%;text-align:left;padding:9px 14px;border:none;background:none;cursor:pointer;border-left:3px solid transparent;transition:all .12s;display:flex;flex-direction:column;gap:2px}
+.evt-btn:hover{background:var(--surface)}
+.evt-name{font-size:13px;font-weight:500;color:var(--ink2);line-height:1.3}
+.evt-date{font-size:11px;color:var(--ink4)}
+.evt-status{font-size:10px;padding:2px 6px;border-radius:20px;font-weight:500;margin-top:3px;display:inline-block;border:1px solid var(--line)}
+.status-planning{background:var(--warn-bg);color:var(--warn-text);border-color:var(--warn-border)}
+.status-confirmed{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-border)}
+.status-soldout{background:var(--purple-bg);color:var(--purple-text);border-color:var(--purple-border)}
+.status-completed{background:var(--surface);color:var(--ink3);border-color:var(--line)}
+.status-regular{background:var(--flag-bg);color:var(--flag-text);border-color:var(--flag-border)}
+.evt-btn.active-chu{background:var(--chu-light);border-left-color:var(--chu)}
+.evt-btn.active-chu .evt-name{color:var(--chu)}
+.evt-btn.active-wu{background:var(--wu-light);border-left-color:var(--wu)}
+.evt-btn.active-wu .evt-name{color:var(--wu)}
+.main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--surface)}
+.main-inner{max-width:760px;margin:0 auto;padding:24px 20px 80px}
+.mobile-list{display:none;position:absolute;inset:0;background:var(--white);z-index:30;overflow-y:auto;flex-direction:column}
+.mobile-list-hdr{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;flex-shrink:0;position:sticky;top:0;background:var(--white)}
+.mobile-list-title{font-size:15px;font-weight:500;color:var(--ink);flex:1}
+.close-btn{width:32px;height:32px;border-radius:50%;border:none;background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.close-btn svg{width:16px;height:16px;color:var(--ink2)}
+.mobile-venue-tabs{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.mvt-btn{flex:1;padding:8px;font-size:13px;font-weight:500;border-radius:var(--radius);border:1.5px solid var(--line);background:var(--white);color:var(--ink3);cursor:pointer;text-align:center}
+.mvt-btn.mvt-chu{background:var(--chu);border-color:var(--chu);color:#fff}
+.mvt-btn.mvt-wu{background:var(--wu);border-color:var(--wu);color:#fff}
+.mobile-evt-btn{width:100%;text-align:left;padding:14px 16px;border:none;background:none;cursor:pointer;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mobile-evt-btn:active{background:var(--surface)}
+.meb-left{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.meb-name{font-size:14px;font-weight:500;color:var(--ink)}
+.meb-meta{font-size:12px;color:var(--ink3);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bottom-nav{display:none;height:var(--bottom-h);background:var(--white);border-top:1px solid var(--line);flex-shrink:0;align-items:stretch;z-index:20}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;cursor:pointer;color:var(--ink3);font-size:10px;font-weight:500;padding:0}
+.bnav-btn svg{width:20px;height:20px}
+.bnav-btn.bn-ov{color:var(--ink)}.bnav-btn.bn-chu{color:var(--chu)}.bnav-btn.bn-wu{color:var(--wu)}
+.ov-month{font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin:20px 0 8px;display:flex;align-items:center;gap:8px}
+.ov-month::after{content:'';flex:1;height:1px;background:var(--line)}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.ov-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.ov-card:active{opacity:.8;transform:scale(.98)}
+.ov-card.ov-chu{border-left-color:var(--chu)}.ov-card.ov-wu{border-left-color:var(--wu)}
+.ov-venue{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px}
+.ov-chu .ov-venue{color:var(--chu)}.ov-wu .ov-venue{color:var(--wu)}
+.ov-name{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px;line-height:1.3}
+.ov-date{font-size:11px;color:var(--ink3)}
+.ov-pills{display:flex;flex-wrap:wrap;gap:3px;margin-top:7px}
+.ov-pill{font-size:10px;padding:2px 6px;border-radius:20px;font-weight:500;border:1px solid var(--line);color:var(--ink3);background:var(--surface)}
+.ov-pill-warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-text)}
+.ov-pill-ok{background:var(--ok-bg);border-color:var(--ok-border);color:var(--ok-text)}
+.event-eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.eyebrow-chu{color:var(--chu)}.eyebrow-wu{color:var(--wu)}
+.switch-venue-link{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:var(--white);cursor:pointer;color:var(--ink3);transition:all .15s}
+.switch-venue-link:hover{border-color:var(--ink3);color:var(--ink)}
+.event-title-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.event-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;color:var(--ink);line-height:1.2;flex:1}
+.status-select{font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;border:1.5px solid var(--line);background:var(--white);color:var(--ink2);cursor:pointer;margin-top:4px;outline:none}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.etag{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;border:1px solid var(--line);background:var(--surface);color:var(--ink3)}
+.snapshot{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.snap-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;transition:all .15s}
+.snap-card.editable{cursor:pointer}.snap-card.editable:hover{border-color:var(--ink3)}
+.snap-label{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.snap-val{font-size:16px;font-weight:600;color:var(--ink);line-height:1.2}
+.snap-sub{font-size:11px;color:var(--ink3);margin-top:2px}
+.snap-card.snap-warn{border-color:var(--warn-border);background:var(--warn-bg)}
+.snap-card.snap-warn .snap-val,.snap-card.snap-warn .snap-label{color:var(--warn-text)}
+.snap-card.snap-ok{border-color:var(--ok-border);background:var(--ok-bg)}
+.snap-card.snap-ok .snap-val{color:var(--ok-text)}
+.tp-bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:5px}
+.tp-fill{height:100%;border-radius:3px;transition:width .3s}
+.tp-chu{background:var(--chu)}.tp-wu{background:var(--wu)}
+.hero-div{height:1px;background:var(--line);margin:14px 0}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:var(--radius);font-size:13px;line-height:1.5;margin-bottom:8px}
+.banner svg{width:15px;height:15px;flex-shrink:0;margin-top:2px}
+.banner-dual{background:var(--flag-bg);border:1px solid var(--flag-border);color:var(--flag-text)}
+.banner-flag{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn-text)}
+.banner-suggest{background:var(--ok-bg);border:1px solid var(--ok-border);color:var(--ok-text)}
+.accord{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:8px;background:var(--white)}
+.accord-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;min-height:52px}
+.accord-hdr:active{background:var(--surface)}
+.accord-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.accord-icon svg{width:15px;height:15px}
+.ai-chu{background:var(--chu-light);color:var(--chu)}.ai-wu{background:var(--wu-light);color:var(--wu)}
+.ai-neutral{background:var(--surface);color:var(--ink3)}
+.ai-green{background:var(--ok-bg);color:var(--ok-text)}
+.ai-purple{background:var(--purple-bg);color:var(--purple-text)}
+.ai-warn{background:var(--warn-bg);color:var(--warn-text)}
+.accord-title{font-size:14px;font-weight:500;color:var(--ink);flex:1}
+.accord-sub{font-size:11px;color:var(--ink3);margin-right:6px}
+.chev{width:16px;height:16px;color:var(--ink3);transition:transform .2s;flex-shrink:0}
+.chev.open{transform:rotate(180deg)}
+.accord-body{border-top:1px solid var(--line);padding:14px}
+.checklist{display:flex;flex-direction:column;gap:4px}
+.chk-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surface);transition:background .12s}
+.chk-item:hover{background:#EAEAEA}
+.chk-item.done{opacity:.55}
+.chk-cb{width:18px;height:18px;border:2px solid var(--ink3);border-radius:4px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s}
+.chk-cb.checked{background:var(--ok-text);border-color:var(--ok-text)}
+.chk-cb svg{display:none;width:10px;height:10px;stroke:#fff;stroke-width:3}
+.chk-cb.checked svg{display:block}
+.chk-body{flex:1;min-width:0}
+.chk-text{font-size:13px;color:var(--ink);line-height:1.4}
+.chk-item.done .chk-text{text-decoration:line-through;color:var(--ink3)}
+.chk-meta{display:flex;gap:8px;margin-top:3px;flex-wrap:wrap}
+.chk-owner{font-size:11px;color:var(--ink3);background:var(--white);border:1px solid var(--line);border-radius:20px;padding:1px 7px}
+.chk-due{font-size:11px;color:var(--ink3)}
+.chk-due.late{color:var(--flag-text);font-weight:500}
+.chk-actions{display:flex;gap:4px;opacity:0;transition:opacity .15s;flex-shrink:0}
+.chk-item:hover .chk-actions{opacity:1}
+.chk-act-btn{width:24px;height:24px;border-radius:5px;border:1px solid var(--line);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:12px}
+.chk-act-btn:hover{background:var(--flag-bg);color:var(--flag-text);border-color:var(--flag-border)}
+.add-chk-btn,.add-row-btn,.add-ent-btn,.add-rs-btn{width:100%;padding:8px;border:1.5px dashed var(--line);border-radius:var(--radius);background:none;cursor:pointer;font-size:13px;color:var(--ink3);margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.add-chk-btn:hover,.add-row-btn:hover,.add-ent-btn:hover,.add-rs-btn:hover{border-color:var(--ink3);color:var(--ink2)}
+.add-chk-btn svg,.add-row-btn svg,.add-ent-btn svg,.add-rs-btn svg{width:13px;height:13px}
+.budget-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.budget-card{background:var(--surface);border-radius:var(--radius);padding:12px 14px;border:1px solid var(--line)}
+.budget-label{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.budget-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;border-bottom:1px solid var(--line)}
+.budget-row:last-child{border-bottom:none;font-weight:600;padding-top:6px;margin-top:4px}
+.budget-row span:first-child{color:var(--ink3)}
+.budget-row span:last-child{color:var(--ink)}
+.variance-pos{color:var(--ok-text)!important}.variance-neg{color:var(--flag-text)!important}
+.budget-note{font-size:12px;padding:8px;background:var(--warn-bg);border-radius:6px;border:1px solid var(--warn-border);color:var(--warn-text);margin-top:8px}
+.allergen-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.allergen-tbl th{text-align:left;font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;padding:5px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+.allergen-tbl td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--ink)}
+.allergen-tbl tr:last-child td{border-bottom:none}
+.allergen-tbl .dish-col{font-weight:500;min-width:120px}
+.allergen-dot{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;cursor:pointer;transition:all .15s;border:1.5px solid var(--line);background:var(--surface);color:var(--ink4)}
+.allergen-dot.active{background:var(--flag-text);border-color:var(--flag-text);color:#fff}
+.allergen-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:12px;color:var(--ink3)}
+.al-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px}
+.run-sheet{display:flex;flex-direction:column;gap:0}
+.rs-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.rs-item:last-child{border-bottom:none}
+.rs-time{font-size:12px;font-weight:600;color:var(--ink3);width:56px;flex-shrink:0;padding-top:2px}
+.rs-body{flex:1;min-width:0}
+.rs-title{font-size:13px;font-weight:500;color:var(--ink);display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.rs-note{font-size:12px;color:var(--ink3);margin-top:2px}
+.rs-type{font-size:10px;padding:1px 7px;border-radius:20px;font-weight:500}
+.rst-setup{background:var(--surface);color:var(--ink3);border:1px solid var(--line)}
+.rst-service{background:var(--chu-light);color:var(--chu);border:1px solid var(--chu-mid)}
+.rst-entertain{background:var(--purple-bg);color:var(--purple-text);border:1px solid var(--purple-border)}
+.rst-close{background:var(--flag-bg);color:var(--flag-text);border:1px solid var(--flag-border)}
+.ent-grid{display:flex;flex-direction:column;gap:8px}
+.ent-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.ent-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ent-name{font-size:14px;font-weight:500;color:var(--ink);flex:1}
+.ent-confirmed{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.ent-yes{background:var(--ok-bg);color:var(--ok-text);border:1px solid var(--ok-border)}
+.ent-no{background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-border)}
+.ent-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--ink3)}
+.ent-row span:last-child{color:var(--ink);font-weight:500}
+.booking-info{display:grid;grid-template-columns:130px 1fr;gap:0}
+.bi-row .bk,.bi-row .bv{padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.4}
+.bi-row:last-child .bk,.bi-row:last-child .bv{border-bottom:none}
+.bk{color:var(--ink3);font-weight:500;padding-right:12px}.bv{color:var(--ink)}
+.bv.editable{cursor:pointer;border-radius:4px;padding-left:4px;margin-left:-4px}
+.bv.editable:hover{background:var(--surface)}
+.bv.editable::after{content:' ✎';font-size:10px;color:var(--ink4)}
+.bv input,.bv textarea{width:100%;font-size:13px;font-family:'Inter',sans-serif;border:1.5px solid var(--chu);border-radius:6px;padding:4px 8px;outline:none;background:var(--white);color:var(--ink);resize:vertical}
+.post-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.post-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.post-label{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.post-val{font-size:18px;font-weight:600;color:var(--ink)}
+.post-sub{font-size:11px;color:var(--ink3);margin-top:2px}
+.notes-area{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.notes-label{font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.notes-text{font-size:13px;color:var(--ink2);line-height:1.6;white-space:pre-wrap;min-height:20px}
+.notes-text.empty{color:var(--ink4);font-style:italic}
+.notes-textarea{width:100%;font-size:13px;font-family:'Inter',sans-serif;border:1.5px solid var(--chu);border-radius:8px;padding:8px 10px;outline:none;resize:vertical;min-height:80px;color:var(--ink);background:var(--white);line-height:1.6}
+.notes-edit-btn{font-size:11px;color:var(--ink3);background:none;border:1px solid var(--line);border-radius:6px;padding:3px 9px;cursor:pointer;margin-top:6px;display:inline-flex;align-items:center;gap:4px}
+.notes-edit-btn svg{width:11px;height:11px}
+.notes-save-row{display:flex;gap:6px;margin-top:6px}
+.notes-save-btn{font-size:12px;padding:5px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
+.notes-save-btn.ok{background:var(--chu);color:#fff}.notes-save-btn.cancel{background:var(--surface);color:var(--ink2);border:1px solid var(--line)}
+.mtbl{width:100%;border-collapse:collapse;font-size:13px}
+.mtbl th{text-align:left;font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:6px 8px;border-bottom:1px solid var(--line)}
+.mtbl td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:middle;line-height:1.4;color:var(--ink)}
+.mtbl tr:last-child td{border-bottom:none}
+.mtbl .sr td{background:var(--surface);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);padding:6px 8px}
+.mtbl .cc{color:var(--ink3);font-size:11px;font-weight:500;width:100px;white-space:nowrap}
+.mtbl .nc{color:var(--ink3);font-size:11px;font-style:italic;width:110px}
+.mtbl .ac{width:50px;text-align:right;white-space:nowrap}
+.row-action-btn{font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid var(--line);background:var(--white);cursor:pointer;color:var(--ink3);margin-left:3px;transition:all .12s}
+.row-action-btn:hover{border-color:var(--ink3);color:var(--ink)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--white);border-radius:16px;padding:24px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:4px}.modal p{font-size:13px;color:var(--ink3);margin-bottom:18px}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:5px}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%;font-size:14px;padding:9px 12px;border:1.5px solid var(--line);border-radius:var(--radius);font-family:'Inter',sans-serif;color:var(--ink);background:var(--white);outline:none}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--chu)}
+.modal-field textarea{resize:vertical;min-height:60px}
+.modal-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.modal-btn{padding:9px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:none}
+.modal-btn.primary{background:var(--chu);color:#fff}
+.modal-btn.secondary{background:var(--surface);color:var(--ink2);border:1px solid var(--line)}
+.modal-btn.danger{background:var(--flag-bg);color:var(--flag-text);border:1px solid var(--flag-border)}
+@media(max-width:640px){
+  .sidebar{display:none}.bottom-nav{display:flex}.venue-switcher{display:none}
+  .main-inner{padding:16px 14px 80px}.event-title{font-size:22px}
+  .budget-grid{grid-template-columns:1fr}.post-grid{grid-template-columns:1fr}
+  .snapshot{grid-template-columns:1fr 1fr}.mtbl .nc{display:none}
+}
+@media(min-width:641px){.bottom-nav{display:none}.sidebar{display:flex}}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-logo">Venue Plus</div>
+  <div class="login-sub">Event Planner</div>
+  <div class="login-card">
+    <h2>Welcome back</h2><p>Select your profile to continue</p>
+    <div class="user-list" id="user-list"></div>
+  </div>
+</div>
+
+<div class="pin-overlay hidden" id="pin-overlay">
+  <div class="pin-card">
+    <h3 id="pin-title">Enter your PIN</h3><p id="pin-sub">4-digit PIN required</p>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-key" onclick="pinKey('1')">1</button><button class="pin-key" onclick="pinKey('2')">2</button><button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button><button class="pin-key" onclick="pinKey('5')">5</button><button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button><button class="pin-key" onclick="pinKey('8')">8</button><button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('0')" style="grid-column:2">0</button>
+      <button class="pin-key del" onclick="pinDel()">&#x232B;</button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <button class="pin-cancel" onclick="cancelPin()">Cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="gen-modal">
+  <div class="modal">
+    <h3 id="gm-title">Edit</h3><p id="gm-sub"></p>
+    <div id="gm-fields"></div>
+    <div class="modal-actions" id="gm-actions"></div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="event-modal">
+  <div class="modal">
+    <h3>Add new event</h3><p>Create a new event for either venue</p>
+    <div class="modal-field"><label>Venue</label>
+      <select id="em-venue"><option value="chu">Chu the Phat</option><option value="wu">Madame Wu</option></select></div>
+    <div class="modal-field"><label>Event name</label><input id="em-name" placeholder="e.g. Spring Cocktail Evening"/></div>
+    <div class="modal-field-row">
+      <div class="modal-field"><label>Date (display)</label><input id="em-date" placeholder="e.g. Fri 14 Mar"/></div>
+      <div class="modal-field"><label>Date (YYYY-MM-DD)</label><input id="em-ds" placeholder="2026-03-14"/></div>
+    </div>
+    <div class="modal-field-row">
+      <div class="modal-field"><label>Ticket price</label><input id="em-price" placeholder="e.g. $99pp"/></div>
+      <div class="modal-field"><label>Food allocation pp</label><input id="em-food" placeholder="e.g. $45pp or TBC"/></div>
+    </div>
+    <div class="modal-field-row">
+      <div class="modal-field"><label>Event type</label>
+        <select id="em-type"><option value="Ticketed">Ticketed</option><option value="Regular service">Regular service</option><option value="Private">Private</option></select></div>
+      <div class="modal-field"><label>Service style</label>
+        <select id="em-style"><option value="Sit-down">Sit-down</option><option value="Roaming">Roaming</option><option value="Banquet">Banquet</option><option value="A la carte">A la carte</option></select></div>
+    </div>
+    <div class="modal-field"><label>Dual venue day?</label>
+      <select id="em-dual"><option value="false">No</option><option value="true">Yes - both venues same day</option></select></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeModal('event-modal')">Cancel</button>
+      <button class="modal-btn primary" onclick="confirmAddEvent()">Add event</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell" id="app-shell" style="display:none">
+  <div class="admin-bar hidden" id="admin-bar">
+    <span>Admin mode</span>
+    <button class="admin-btn" onclick="openModal('event-modal')">+ Add event</button>
+    <button class="admin-btn" onclick="manageUsers()">Users</button>
+  </div>
+  <div class="topbar">
+    <button class="back-btn" id="back-btn" onclick="handleBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="brand">
+      <div class="brand-name" id="brand-name">Venue Plus</div>
+      <div class="brand-sub" id="brand-sub">Event Planner</div>
+    </div>
+    <div class="venue-switcher">
+      <button class="vs-btn" id="vs-ov" onclick="showOverview()">All events</button>
+      <button class="vs-btn" id="vs-chu" onclick="switchVenue('chu')">Chu the Phat</button>
+      <button class="vs-btn" id="vs-wu" onclick="switchVenue('wu')">Madame Wu</button>
+    </div>
+    <div class="topbar-right">
+      <span class="access-badge" id="access-badge"></span>
+      <button class="icon-btn" onclick="handleLogout()" title="Log out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="body">
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-hdr">
+        <span class="sidebar-hdr-label" id="sidebar-label">Events</span>
+        <div class="sidebar-switch">
+          <button class="ss-btn" id="ss-chu" onclick="switchVenue('chu')">Chu</button>
+          <button class="ss-btn" id="ss-wu" onclick="switchVenue('wu')">Wu</button>
+        </div>
+      </div>
+      <div class="event-list" id="event-list"></div>
+    </nav>
+    <div class="mobile-list" id="mobile-list">
+      <div class="mobile-list-hdr">
+        <span class="mobile-list-title">Events</span>
+        <button class="close-btn" onclick="closeMobileList()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="mobile-venue-tabs">
+        <button class="mvt-btn" id="mvt-chu" onclick="setMobileVenue('chu')">Chu the Phat</button>
+        <button class="mvt-btn" id="mvt-wu" onclick="setMobileVenue('wu')">Madame Wu</button>
+      </div>
+      <div id="mobile-list-body"></div>
+    </div>
+    <main class="main" id="main">
+      <div class="main-inner" id="main-inner"></div>
+    </main>
+  </div>
+  <nav class="bottom-nav">
+    <button class="bnav-btn" id="bn-ov" onclick="showOverview()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>All
+    </button>
+    <button class="bnav-btn" id="bn-chu" onclick="openMobileList('chu')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Chu
+    </button>
+    <button class="bnav-btn" id="bn-wu" onclick="openMobileList('wu')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Wu
+    </button>
+  </nav>
+</div>
+
+<script>
+const USERS=[
+  {id:'viewer',name:'Front of House',role:'View only',level:1,pin:'1111',av:'av-1'},
+  {id:'editor',name:'Restaurant Manager',role:'Editor',level:2,pin:'2222',av:'av-2'},
+  {id:'admin',name:'Brendon',role:'Administrator',level:3,pin:'3333',av:'av-3'},
+];
+const ALLERGENS=['Gluten','Dairy','Eggs','Nuts','Peanuts','Soy','Seafood','Sesame','Sulphites','Lupin'];
+const STATUSES={
+  planning:{label:'In planning',cls:'status-planning'},
+  confirmed:{label:'Confirmed',cls:'status-confirmed'},
+  soldout:{label:'Sold out',cls:'status-soldout'},
+  completed:{label:'Completed',cls:'status-completed'},
+  regular:{label:'Regular service',cls:'status-regular'},
+};
+const EVENTS=[
+  {id:'wwine',venue:'chu',date:'Wed 22 Jul',ds:'2026-07-22',name:'Winter Wine Dinner',
+   price:'$99pp',foodAlloc:'$49.50pp',pax:'',paxSold:'',type:'Ticketed',style:'Sit-down',status:'confirmed',dual:false,
+   bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',bookingCutoff:'Sold out or called by management',
+   staffing:'',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Confirm steak knives are in-house',done:false,owner:'Manager',due:'2026-07-20'},
+     {id:'a2',text:'Clarify Course 1 — pre-select or choose on the night',done:false,owner:'Brendon',due:'2026-07-18'},
+     {id:'a3',text:'Verify $49.50pp covers full menu including wagyu and sides',done:false,owner:'Brendon',due:'2026-07-18'},
+   ],
+   entertainment:[],
+   runsheet:[
+     {id:'r1',time:'6:00 PM',title:'Doors open — standing canape service begins',note:'',type:'service'},
+     {id:'r2',time:'6:30 PM',title:'Guests seated',note:'Transition from standing to seated',type:'service'},
+     {id:'r3',time:'6:45 PM',title:'Course 1',note:'Smoked quail or chicken wings',type:'service'},
+     {id:'r4',time:'7:15 PM',title:'Course 2',note:'Kimchi spring roll and duck buns',type:'service'},
+     {id:'r5',time:'7:45 PM',title:'Course 3',note:'Wagyu rump steak and sides',type:'service'},
+     {id:'r6',time:'8:30 PM',title:'Dessert',note:'Chocolate tart and fortified shiraz',type:'service'},
+     {id:'r7',time:'9:00 PM',title:'Event close',note:'Last drinks, guests depart',type:'close'},
+   ],
+   actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},
+   food:[
+     {s:1,l:'Canapes - standing',allergens:{}},
+     {l:'',d:'Mushroom parfait, endive, walnut, black rice',n:'',allergens:{Gluten:true,Nuts:true}},
+     {l:'',d:'Oysters, yuzu buttermilk, finger lime',n:'',allergens:{Dairy:true,Seafood:true}},
+     {s:1,l:'Course 1 - choose one',allergens:{}},
+     {l:'Option A',d:'Smoked quail, tomato and basil salad, spiced black vinegar',n:'Pre-select or on night?',allergens:{}},
+     {l:'Option B',d:'Boneless smoked chicken wings, tomato dragon sauce, dong chi mi',n:'',allergens:{Gluten:true,Soy:true}},
+     {s:1,l:'Course 2',allergens:{}},
+     {l:'',d:'Bacon kimchi spring roll, blue cheese dressing',n:'',allergens:{Gluten:true,Dairy:true}},
+     {l:'',d:'Steamed duck buns',n:'',allergens:{Gluten:true,Soy:true}},
+     {s:1,l:'Course 3',allergens:{}},
+     {l:'',d:'Apple glazed Sir Harry F1 Wagyu rump steak',n:'Steak knives required',allergens:{}},
+     {l:'Sides',d:'Fries / Chard XO / Cauliflower miso and cheese / Perilla mustard / Kimchi',n:'',allergens:{Dairy:true,Soy:true}},
+     {s:1,l:'Dessert',allergens:{}},
+     {l:'',d:'Bitter chocolate tart, poached quince, vanilla creme diplomat',n:'',allergens:{Gluten:true,Dairy:true,Eggs:true}},
+   ],
+   bev:[
+     {l:'Arrival',d:'Delamere Tasmanian Cuvee NV',n:'Fine bubbles, not too buttery',allergens:{Sulphites:true}},
+     {l:'Course 1',d:'Tim Adams The Fergus 2022 - Grenache, Tempranillo, Malbec',n:'Serve before Pinot',allergens:{Sulphites:true}},
+     {l:'Course 2',d:'Supernatural Pinot 2025',n:'Unfiltered, cherry, light forest floor',allergens:{Sulphites:true}},
+     {l:'Course 3',d:'2023 Mother Milk Shiraz, Barossa',n:'Good tannins, pairs with steak',allergens:{Sulphites:true}},
+     {l:'Dessert',d:"D'Arenberg Fortified Shiraz",n:'Dry but sweet, pairs with chocolate',allergens:{Sulphites:true}},
+   ]},
+  {id:'rodeo',venue:'chu',date:'Tue 11 Aug',ds:'2026-08-11',name:'Rhinestone Rodeo',
+   price:'$79pp',foodAlloc:'$30pp',pax:'',paxSold:'',type:'Ticketed',style:'Roaming',status:'planning',dual:false,
+   bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',bookingCutoff:'Sold out or called by management',
+   staffing:'',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Confirm western theme styling and props',done:false,owner:'Manager',due:'2026-08-01'},
+     {id:'a2',text:'Finalise beverage list',done:false,owner:'Brendon',due:'2026-08-01'},
+     {id:'a3',text:'Verify $30pp covers canape list at expected volume',done:false,owner:'Brendon',due:'2026-08-01'},
+   ],
+   entertainment:[],runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},
+   food:[{s:1,l:'Roaming canapes - western theme',allergens:{}},{l:'',d:'Duck buns',n:'',allergens:{Gluten:true,Soy:true}},{l:'',d:'Chicken ribs',n:'',allergens:{}},{l:'',d:'Veg spring rolls',n:'',allergens:{Gluten:true}},{l:'',d:'Wagyu dumplings',n:'',allergens:{Gluten:true,Soy:true}},{l:'',d:'18 spice LA cut pork ribs',n:'',allergens:{}},{l:'',d:'Fried rice',n:'',allergens:{Eggs:true,Soy:true}}],
+   bev:[]},
+  {id:'comedy',venue:'chu',date:'Fri 21 Aug',ds:'2026-08-21',name:'Comedy Lunch',
+   price:'$130pp',foodAlloc:'TBC',pax:'',paxSold:'',type:'Ticketed',style:'Banquet',status:'planning',dual:false,
+   bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',bookingCutoff:'Sold out or called by management',
+   staffing:'',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Set food allocation — cost menu against $130pp with comedy and staging expenses',done:false,owner:'Brendon',due:'2026-08-07'},
+     {id:'a2',text:'Confirm which version of Chu weekender menu',done:false,owner:'Manager',due:'2026-08-07'},
+     {id:'a3',text:'Book and confirm 3x comedians',done:false,owner:'Brendon',due:'2026-07-31'},
+     {id:'a4',text:'Organise staging and AV',done:false,owner:'Manager',due:'2026-08-14'},
+   ],
+   entertainment:[
+     {id:'e1',name:'3x Comedians',role:'Comedy performance',fee:'TBC',deposit:'',confirmed:false,notes:''},
+     {id:'e2',name:'Staging and AV',role:'Stage setup and sound',fee:'TBC',deposit:'',confirmed:false,notes:''},
+   ],
+   runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},
+   food:[{s:1,l:'2 course banquet',allergens:{}},{l:'',d:'Current Chu weekender menu — version TBC',n:'Confirm menu',allergens:{}}],bev:[]},
+  {id:'riverfire-chu',venue:'chu',date:'Sat 5 Sep',ds:'2026-09-05',name:'Super Chuper Riverfire',
+   price:'Regular service',foodAlloc:'—',pax:'',paxSold:'',type:'Regular service',style:'A la carte',status:'regular',dual:true,
+   bookingStatus:'Regular service — walk-ins managed by restaurant manager',bookingChannel:'Now Book It + walk-in',bookingUrl:'',bookingCutoff:'Restaurant manager calls it on the night',
+   staffing:'Coordinate with Madame Wu — both venues running Riverfire same day',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Confirm staffing plan across both venues for 5 Sep',done:false,owner:'Brendon',due:'2026-08-22'},
+     {id:'a2',text:'Brief restaurant manager on walk-in cut-off authority',done:false,owner:'Brendon',due:'2026-09-01'},
+   ],
+   entertainment:[],runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},food:[],bev:[]},
+  {id:'dads-chu',venue:'chu',date:'Sun 6 Sep',ds:'2026-09-06',name:'Super Dad Day',
+   price:'Regular service',foodAlloc:'—',pax:'',paxSold:'',type:'Regular service',style:'A la carte',status:'regular',dual:true,
+   bookingStatus:'Regular service',bookingChannel:'Now Book It + walk-in',bookingUrl:'',bookingCutoff:'Restaurant manager calls it on the night',
+   staffing:'Coordinate with Madame Wu — both venues running Fathers Day same day',
+   suggest:'Run a meat tray raffle here too if Madame Wu is doing one — keeps both venues consistent.',
+   notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Confirm staffing plan across both venues for 6 Sep',done:false,owner:'Brendon',due:'2026-08-22'},
+     {id:'a2',text:'Decide on meat tray raffle — source prize if going ahead',done:false,owner:'Manager',due:'2026-08-29'},
+   ],
+   entertainment:[],runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},food:[],bev:[]},
+  {id:'cup-chu',venue:'chu',date:'Tue 3 Nov',ds:'2026-11-03',name:'Melbourne Cup',
+   price:'$99 / $120pp',foodAlloc:'TBC',pax:'',paxSold:'',type:'Ticketed',style:'Banquet',status:'planning',dual:true,
+   bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',bookingCutoff:'Sold out or called by management',
+   staffing:'Coordinate with Madame Wu — both venues running Melbourne Cup same day',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Draft marketing copy explaining Tier 1 vs Tier 2 inclusions',done:false,owner:'Brendon',due:'2026-09-15'},
+     {id:'a2',text:'Set food allocation — same per tier',done:false,owner:'Brendon',due:'2026-09-15'},
+     {id:'a3',text:'Confirm staffing plan across both venues for 3 Nov',done:false,owner:'Brendon',due:'2026-10-01'},
+   ],
+   entertainment:[],runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},
+   food:[{s:1,l:'2 course banquet',allergens:{}},{l:'',d:'Current Chu weekender menu — version TBC',n:'Confirm menu',allergens:{}}],
+   bev:[{l:'Tier 1 (2 hr)',d:'2 hour beverage package — confirm selection',n:'',allergens:{}},{l:'Tier 2 (3 hr)',d:'3 hour beverage package — confirm selection',n:'',allergens:{}}]},
+  {id:'masq',venue:'wu',date:'Fri 7 Aug',ds:'2026-08-07',name:'Masquerade Party',
+   price:'$199pp',foodAlloc:'$60pp',pax:'',paxSold:'',type:'Ticketed',style:'Roaming',status:'planning',dual:false,
+   bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',bookingCutoff:'Sold out or called by management',
+   staffing:'',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Confirm band is booked — get contract and fee',done:false,owner:'Brendon',due:'2026-07-25'},
+     {id:'a2',text:'Confirm strings performer is booked — get contract and fee',done:false,owner:'Brendon',due:'2026-07-25'},
+     {id:'a3',text:'Confirm tarot card reader is booked — get fee',done:false,owner:'Manager',due:'2026-07-25'},
+     {id:'a4',text:'Decide on dessert — will change food allocation if added',done:false,owner:'Brendon',due:'2026-07-20'},
+   ],
+   entertainment:[
+     {id:'e1',name:'Band',role:'Live music',fee:'TBC',deposit:'',confirmed:false,notes:''},
+     {id:'e2',name:'String performers',role:'Ambient strings',fee:'TBC',deposit:'',confirmed:false,notes:''},
+     {id:'e3',name:'Tarot Card Reader',role:'Guest experience',fee:'TBC',deposit:'',confirmed:false,notes:''},
+   ],
+   runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},
+   food:[
+     {s:1,l:'Roaming canapes',allergens:{}},
+     {l:'',d:'Oysters, yuzu buttermilk',n:'',allergens:{Seafood:true,Dairy:true}},
+     {l:'',d:'Duck buns',n:'',allergens:{Gluten:true,Soy:true}},
+     {l:'',d:'Chicken ribs',n:'',allergens:{}},
+     {l:'',d:'Wagyu tartare',n:'',allergens:{Eggs:true}},
+     {l:'',d:'Corn cakes',n:'',allergens:{Gluten:true,Dairy:true,Eggs:true}},
+     {l:'',d:'Ocean trout salad',n:'',allergens:{Seafood:true}},
+     {l:'',d:'Fried rice',n:'',allergens:{Eggs:true,Soy:true}},
+     {l:'',d:'Beef cheeks',n:'',allergens:{}},
+     {l:'',d:'Kung pao chicken',n:'',allergens:{Nuts:true,Soy:true}},
+     {l:'',d:'Bugs XO sauce',n:'',allergens:{Seafood:true,Soy:true}},
+     {s:1,l:'Dessert',allergens:{}},
+     {l:'',d:'TBC — decision required',n:'Do we add dessert?',allergens:{}},
+   ],
+   bev:[{l:'3 hr package',d:'Beverage package — confirm selection with supplier',n:'',allergens:{Sulphites:true}}]},
+  {id:'riverfire-wu',venue:'wu',date:'Sat 5 Sep',ds:'2026-09-05',name:'Riverfire',
+   price:'$275pp',foodAlloc:'TBC',pax:'',paxSold:'',type:'Ticketed',style:'Roaming',status:'planning',dual:true,
+   bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',bookingCutoff:'Restaurant manager calls it on the night',
+   staffing:'Coordinate with Chu the Phat — both venues running Riverfire same day',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Set food menu and allocation — $275pp, confirm margin',done:false,owner:'Brendon',due:'2026-08-01'},
+     {id:'a2',text:'Confirm band is booked and costed',done:false,owner:'Brendon',due:'2026-08-01'},
+     {id:'a3',text:'Confirm staffing plan across both venues for 5 Sep',done:false,owner:'Brendon',due:'2026-08-22'},
+   ],
+   entertainment:[{id:'e1',name:'Band',role:'Live music',fee:'TBC',deposit:'',confirmed:false,notes:''}],
+   runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},food:[],bev:[]},
+  {id:'dads-wu',venue:'wu',date:'Sun 6 Sep',ds:'2026-09-06',name:"Father's Day",
+   price:'$79pp',foodAlloc:'TBC',pax:'',paxSold:'',type:'Ticketed',style:'Banquet',status:'planning',dual:true,
+   bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',bookingCutoff:'Sold out or called by management',
+   staffing:'Coordinate with Chu the Phat — both venues running Fathers Day same day',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Set food menu and allocation',done:false,owner:'Brendon',due:'2026-08-15'},
+     {id:'a2',text:'Source and confirm meat tray raffle prize',done:false,owner:'Manager',due:'2026-08-22'},
+     {id:'a3',text:'Confirm kids menu selection',done:false,owner:'Manager',due:'2026-08-15'},
+     {id:'a4',text:'Confirm staffing plan across both venues for 6 Sep',done:false,owner:'Brendon',due:'2026-08-22'},
+   ],
+   entertainment:[],runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},
+   food:[{s:1,l:'2 course banquet',allergens:{}},{l:'',d:'Menu TBC',n:'Confirm selection',allergens:{}},{s:1,l:'Kids menu',allergens:{}},{l:'',d:'TBC',n:'Confirm',allergens:{}},{s:1,l:'Raffle prize',allergens:{}},{l:'',d:'Meat tray',n:'Who is sourcing?',allergens:{}}],
+   bev:[{l:'Arrival',d:'Glass of prosecco or beer',n:'',allergens:{Sulphites:true}}]},
+  {id:'cup-wu',venue:'wu',date:'Tue 3 Nov',ds:'2026-11-03',name:'Melbourne Cup',
+   price:'$150pp',foodAlloc:'TBC',pax:'',paxSold:'',type:'Ticketed',style:'Banquet',status:'planning',dual:true,
+   bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',bookingCutoff:'Sold out or called by management',
+   staffing:'Coordinate with Chu the Phat — both venues running Melbourne Cup same day',suggest:'',notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+   actions:[
+     {id:'a1',text:'Confirm band booked and costed — get contract',done:false,owner:'Brendon',due:'2026-09-15'},
+     {id:'a2',text:'Set food allocation and confirm menu',done:false,owner:'Brendon',due:'2026-09-15'},
+     {id:'a3',text:'Source fruit basket prize — who is responsible?',done:false,owner:'Manager',due:'2026-10-01'},
+     {id:'a4',text:'Confirm staffing plan across both venues for 3 Nov',done:false,owner:'Brendon',due:'2026-10-01'},
+   ],
+   entertainment:[{id:'e1',name:'Band',role:'Live music',fee:'TBC',deposit:'',confirmed:false,notes:''}],
+   runsheet:[],actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},
+   food:[{s:1,l:'2 course banquet',allergens:{}},{l:'',d:'Menu TBC',n:'Confirm selection',allergens:{}},{s:1,l:'Prize',allergens:{}},{l:'',d:'Fruit basket',n:'Who is sourcing?',allergens:{}}],
+   bev:[{l:'Arrival',d:'Glass of Moet',n:'',allergens:{Sulphites:true}}]},
+];
+
+const VN={chu:'Chu the Phat',wu:'Madame Wu'};
+let currentUser=null,venue='chu',activeId=null,viewState='overview';
+const openS={};
+let pinTarget=null,pinBuffer='',editingNotes=null;
+const isMobile=()=>window.innerWidth<=640;
+
+function svg(p){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`}
+const IC={
+  warn:svg('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'),
+  alert:svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+  bulb:svg('<line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>'),
+  info:svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'),
+  food:svg('<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>'),
+  wine:svg('<path d="M8 22h8"/><path d="M12 11v11"/><path d="M7 2h10l2 7a5 5 0 0 1-10 0l2-7z"/>'),
+  edit:svg('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'),
+  plus:svg('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
+  next:svg('<polyline points="9 18 15 12 9 6"/>'),
+  check:svg('<polyline points="20 6 9 17 4 12"/>'),
+  dollar:svg('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
+  music:svg('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'),
+  ticket:svg('<path d="M15 5v2"/><path d="M15 11v2"/><path d="M15 17v2"/><path d="M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7a2 2 0 0 1 2-2z"/>'),
+  leaf:svg('<path d="M2 22c1.25-4 4-8 8-10a22 22 0 0 1 10-2c0 4.48-2 8-6 10a22 22 0 0 1-12 2z"/>'),
+  list:svg('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>'),
+  clock:svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+  star:svg('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'),
+};
+
+// LOGIN
+function initLogin(){
+  document.getElementById('user-list').innerHTML=USERS.map(u=>`
+    <button class="user-btn" onclick="selectUser('${u.id}')">
+      <div class="user-avatar ${u.av}">${u.name[0]}</div>
+      <div class="user-info"><div class="user-name">${u.name}</div><div class="user-role">${u.role}</div></div>
+      <span class="user-level">L${u.level}</span>
+    </button>`).join('');
+}
+function selectUser(id){
+  pinTarget=USERS.find(u=>u.id===id);pinBuffer='';
+  document.getElementById('pin-title').textContent='Welcome, '+pinTarget.name.split(' ')[0];
+  document.getElementById('pin-sub').textContent='Enter your 4-digit PIN';
+  document.getElementById('pin-error').textContent='';
+  updatePinDots();document.getElementById('pin-overlay').classList.remove('hidden');
+}
+function pinKey(k){if(pinBuffer.length>=4)return;pinBuffer+=k;updatePinDots();if(pinBuffer.length===4)setTimeout(checkPin,120);}
+function pinDel(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();}
+function updatePinDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i).className='pin-dot'+(i<pinBuffer.length?' filled':'');}
+function checkPin(){
+  if(pinBuffer===pinTarget.pin){
+    document.getElementById('pin-overlay').classList.add('hidden');
+    document.getElementById('login-screen').classList.add('hidden');
+    currentUser=pinTarget;launchApp();
+  } else {
+    document.getElementById('pin-error').textContent='Incorrect PIN — try again';
+    pinBuffer='';updatePinDots();
+  }
+}
+function cancelPin(){document.getElementById('pin-overlay').classList.add('hidden');pinTarget=null;pinBuffer='';}
+function handleLogout(){if(!confirm('Log out?'))return;currentUser=null;document.getElementById('app-shell').style.display='none';document.getElementById('login-screen').classList.remove('hidden');document.getElementById('admin-bar').classList.add('hidden');}
+function launchApp(){
+  document.getElementById('app-shell').style.display='flex';
+  const u=currentUser;
+  const bc=u.level===3?'ab-3':u.level===2?'ab-2':'ab-1';
+  document.getElementById('access-badge').className='access-badge '+bc;
+  document.getElementById('access-badge').textContent=u.level===3?'Admin':u.level===2?'Editor':'View only';
+  if(u.level===3)document.getElementById('admin-bar').classList.remove('hidden');
+  showOverview();
+}
+function canEdit(){return currentUser&&currentUser.level>=2;}
+function isAdmin(){return currentUser&&currentUser.level>=3;}
+
+// MODAL
+function openModal(id){document.getElementById(id).classList.remove('hidden');}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+function showGenModal(title,sub,fields,actions){
+  document.getElementById('gm-title').textContent=title;
+  document.getElementById('gm-sub').textContent=sub||'';
+  document.getElementById('gm-fields').innerHTML=fields;
+  document.getElementById('gm-actions').innerHTML=actions;
+  openModal('gen-modal');
+  setTimeout(()=>{const f=document.querySelector('#gm-fields input,#gm-fields select,#gm-fields textarea');if(f)f.focus();},100);
+}
+
+// NAV
+function updateVenueSwitcher(){
+  document.getElementById('vs-ov').className='vs-btn'+(viewState==='overview'?' vs-ov':'');
+  document.getElementById('vs-chu').className='vs-btn'+(venue==='chu'&&viewState!=='overview'?' vs-chu':'');
+  document.getElementById('vs-wu').className='vs-btn'+(venue==='wu'&&viewState!=='overview'?' vs-wu':'');
+  const sc=document.getElementById('ss-chu'),sw=document.getElementById('ss-wu');
+  if(sc)sc.className='ss-btn'+(venue==='chu'?' ss-chu':'');
+  if(sw)sw.className='ss-btn'+(venue==='wu'?' ss-wu':'');
+  ['ov','chu','wu'].forEach(k=>{
+    const b=document.getElementById('bn-'+k);
+    if(b)b.className='bnav-btn'+(viewState==='overview'&&k==='ov'?' bn-ov':venue===k&&viewState!=='overview'?' bn-'+k:'');
+  });
+}
+function setTopBar(name,sub,showBack){
+  document.getElementById('brand-name').textContent=name;
+  document.getElementById('brand-sub').textContent=sub;
+  document.getElementById('back-btn').style.display=showBack?'flex':'none';
+}
+function showOverview(){
+  viewState='overview';activeId=null;editingNotes=null;
+  setTopBar('Venue Plus','Event Planner',false);
+  closeMobileList();updateVenueSwitcher();renderSidebar();renderOverview();
+}
+function switchVenue(v){
+  venue=v;viewState='venue';editingNotes=null;
+  activeId=EVENTS.filter(e=>e.venue===v)[0].id;
+  document.getElementById('sidebar').style.display='flex';
+  updateVenueSwitcher();renderSidebar();renderEvent();
+  setTopBar(VN[v],'Event Planner',false);
+}
+function openMobileList(v){
+  venue=v;setMobileVenue(v);
+  const ml=document.getElementById('mobile-list');
+  ml.style.display='flex';ml.style.flexDirection='column';
+  updateVenueSwitcher();setTopBar(VN[v],'Select an event',false);
+}
+function setMobileVenue(v){
+  venue=v;
+  document.getElementById('mvt-chu').className='mvt-btn'+(v==='chu'?' mvt-chu':'');
+  document.getElementById('mvt-wu').className='mvt-btn'+(v==='wu'?' mvt-wu':'');
+  document.getElementById('mobile-list-body').innerHTML=EVENTS.filter(e=>e.venue===v).map(ev=>{
+    const st=STATUSES[ev.status]||STATUSES.planning;
+    return '<button class="mobile-evt-btn" onclick="selectEvent(\''+ev.id+'\')"><div class="meb-left"><div class="meb-name">'+ev.name+'</div><div class="meb-meta">'+ev.date+' <span class="evt-status '+st.cls+'">'+st.label+'</span></div></div>'+IC.next+'</button>';
+  }).join('');
+}
+function closeMobileList(){document.getElementById('mobile-list').style.display='none';}
+function handleBack(){if(isMobile()&&viewState==='event')openMobileList(venue);else showOverview();}
+function selectEvent(id){
+  const ev=EVENTS.find(e=>e.id===id);
+  venue=ev.venue;activeId=id;viewState='event';editingNotes=null;
+  closeMobileList();updateVenueSwitcher();
+  if(isMobile()){setTopBar(ev.name,VN[venue],true);document.getElementById('sidebar').style.display='none';}
+  else{document.getElementById('sidebar').style.display='flex';renderSidebar();}
+  renderEvent();document.getElementById('main').scrollTop=0;
+}
+function renderSidebar(){
+  const evs=EVENTS.filter(e=>e.venue===venue);
+  document.getElementById('sidebar-label').textContent=VN[venue];
+  document.getElementById('event-list').innerHTML=evs.map(ev=>{
+    const isA=ev.id===activeId;
+    const cls=isA?'evt-btn active-'+venue:'evt-btn';
+    const st=STATUSES[ev.status]||STATUSES.planning;
+    const pending=ev.actions.filter(a=>!a.done).length;
+    const badge=pending?'<span style="font-size:10px;background:var(--warn-bg);color:var(--warn-text);padding:1px 5px;border-radius:10px;border:1px solid var(--warn-border)">'+pending+'</span>':'';
+    return '<button class="'+cls+'" onclick="selectEvent(\''+ev.id+'\')"><span class="evt-name">'+ev.name+' '+badge+'</span><span class="evt-date">'+ev.date+'</span><span class="evt-status '+st.cls+'">'+st.label+'</span></button>';
+  }).join('');
+  document.getElementById('ss-chu').className='ss-btn'+(venue==='chu'?' ss-chu':'');
+  document.getElementById('ss-wu').className='ss-btn'+(venue==='wu'?' ss-wu':'');
+}
+
+// COMPUTED SNAPSHOT
+function computeSnapshot(ev){
+  const price=parseFloat((ev.price||'').replace(/[^0-9.]/g,''))||0;
+  const foodAlloc=parseFloat((ev.foodAlloc||'').replace(/[^0-9.]/g,''))||0;
+  const pax=parseInt(ev.pax)||0;
+  const paxSold=parseInt(ev.paxSold)||0;
+  const foodCount=ev.food.filter(i=>!i.s&&i.d).length;
+  const bevCount=ev.bev.filter(i=>!i.s&&i.d).length;
+  return{price,foodAlloc,pax,paxSold,foodCount,bevCount,
+    budgetRevenue:price&&pax?price*pax:0,
+    budgetFood:foodAlloc&&pax?foodAlloc*pax:0,
+    entTotal:ev.entertainment.reduce((s,e)=>{const f=parseFloat((e.fee||'').replace(/[^0-9.]/g,''));return s+(isNaN(f)?0:f);},0)};
+}
+
+// OVERVIEW
+function renderOverview(){
+  const sorted=[...EVENTS].sort((a,b)=>a.ds.localeCompare(b.ds));
+  const months={};
+  sorted.forEach(ev=>{const m=new Date(ev.ds).toLocaleString('en-AU',{month:'long',year:'numeric'});if(!months[m])months[m]=[];months[m].push(ev);});
+  let h='<div style="margin-bottom:20px"><div style="font-family:\'Playfair Display\',serif;font-size:24px;font-weight:600;color:var(--ink);margin-bottom:3px">All upcoming events</div><div style="font-size:13px;color:var(--ink3)">'+EVENTS.length+' events across Chu the Phat and Madame Wu</div></div>';
+  Object.entries(months).forEach(([m,evs])=>{
+    h+='<div class="ov-month">'+m+'</div><div class="ov-grid">';
+    h+=evs.map(ev=>{
+      const st=STATUSES[ev.status]||STATUSES.planning;
+      const pending=ev.actions.filter(a=>!a.done).length;
+      const pills=[];
+      if(ev.price!=='Regular service')pills.push('<span class="ov-pill">'+ev.price+'</span>');
+      if(pending)pills.push('<span class="ov-pill ov-pill-warn">'+pending+' action'+(pending>1?'s':'')+'</span>');
+      if(ev.dual)pills.push('<span class="ov-pill ov-pill-warn">Both venues</span>');
+      if(ev.status==='soldout')pills.push('<span class="ov-pill ov-pill-ok">Sold out</span>');
+      return '<div class="ov-card ov-'+ev.venue+'" onclick="selectEvent(\''+ev.id+'\')"><div class="ov-venue">'+VN[ev.venue]+'</div><div class="ov-name">'+ev.name+'</div><div class="ov-date">'+ev.date+' <span class="evt-status '+st.cls+'" style="font-size:9px">'+st.label+'</span></div><div class="ov-pills">'+pills.join('')+'</div></div>';
+    }).join('');
+    h+='</div>';
+  });
+  document.getElementById('main-inner').innerHTML=h;
+}
+
+// ACCORDION
+function toggleSection(key){openS[key]=!(openS[key]!==undefined?openS[key]:true);renderEvent();}
+function accord(key,iconHtml,title,sub,body,iconCls,defOpen){
+  const open=openS[key]!==undefined?openS[key]:(defOpen!==undefined?defOpen:true);
+  return '<div class="accord"><div class="accord-hdr" onclick="toggleSection(\''+key+'\')"><div class="accord-icon '+(iconCls||'ai-neutral')+'">'+iconHtml+'</div><span class="accord-title">'+title+'</span>'+(sub?'<span class="accord-sub">'+sub+'</span>':'')+'<svg class="chev'+(open?' open':'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>'+(open?'<div class="accord-body">'+body+'</div>':'')+'</div>';
+}
+
+// NOTES
+function notesArea(evId,key,label){
+  const ev=EVENTS.find(e=>e.id===evId);
+  const val=ev['notes_'+key]||'';
+  const isEditing=editingNotes===evId+'-'+key;
+  if(!canEdit()&&!val)return'';
+  return '<div class="notes-area"><div class="notes-label">'+label+'</div>'+(isEditing?'<textarea class="notes-textarea" id="nt-'+evId+'-'+key+'" placeholder="Type notes here...">'+val+'</textarea><div class="notes-save-row"><button class="notes-save-btn ok" onclick="saveNotes(\''+evId+'\',\''+key+'\')">Save</button><button class="notes-save-btn cancel" onclick="cancelNotes()">Cancel</button></div>':'<div class="notes-text'+(val?'':' empty')+'">'+(val||'Nothing added yet')+'</div>'+(canEdit()?'<button class="notes-edit-btn" onclick="startNotes(\''+evId+'\',\''+key+'\')">'+IC.edit+' Edit</button>':''))+'</div>';
+}
+function startNotes(evId,key){editingNotes=evId+'-'+key;renderEvent();setTimeout(()=>{const t=document.getElementById('nt-'+evId+'-'+key);if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length);}},50);}
+function saveNotes(evId,key){const t=document.getElementById('nt-'+evId+'-'+key);if(t)EVENTS.find(e=>e.id===evId)['notes_'+key]=t.value.trim();editingNotes=null;renderEvent();}
+function cancelNotes(){editingNotes=null;renderEvent();}
+
+// INLINE FIELD EDIT
+function startEdit(evId,field,val){
+  if(!canEdit())return;
+  const cell=document.getElementById('edit-'+evId+'-'+field);if(!cell)return;
+  const isLong=(val||'').length>60;
+  cell.innerHTML=isLong?'<textarea onblur="saveEdit(\''+evId+'\',\''+field+'\',this.value)">'+val+'</textarea>':'<input value="'+((val||'').replace(/"/g,'&quot;'))+'" onblur="saveEdit(\''+evId+'\',\''+field+'\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()"/>';
+  const inp=cell.querySelector('input,textarea');inp.focus();inp.select();
+}
+function saveEdit(evId,field,val){EVENTS.find(e=>e.id===evId)[field]=val.trim();renderEvent();}
+function editableField(evId,field,val,label){
+  if(!canEdit())return '<div class="bi-row"><span class="bk">'+label+'</span><span class="bv">'+(val||'—')+'</span></div>';
+  return '<div class="bi-row"><span class="bk">'+label+'</span><span class="bv editable" id="edit-'+evId+'-'+field+'" onclick="startEdit(\''+evId+'\',\''+field+'\',\''+((val||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;'))+'\')">'+(val||'—')+'</span></div>';
+}
+
+// STATUS
+function changeStatus(evId,val){EVENTS.find(e=>e.id===evId).status=val;renderEvent();renderSidebar();}
+
+// SNAPSHOT EDIT
+function editSnapField(evId,field){
+  if(!canEdit())return;
+  const ev=EVENTS.find(e=>e.id===evId);
+  const labels={price:'Ticket price',foodAlloc:'Food allocation pp',pax:'PAX / Capacity',paxSold:'Tickets sold'};
+  showGenModal('Edit '+labels[field],'','<div class="modal-field"><label>'+labels[field]+'</label><input id="gm-snapval" value="'+(ev[field]||'')+'"/></div>',
+    '<button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveSnapField(\''+evId+'\',\''+field+'\')">Save</button>');
+}
+function saveSnapField(evId,field){
+  EVENTS.find(e=>e.id===evId)[field]=document.getElementById('gm-snapval').value.trim();
+  closeModal('gen-modal');renderEvent();renderSidebar();
+}
+
+// CHECKLIST
+function toggleAction(evId,actionId){
+  if(!canEdit())return;
+  const a=EVENTS.find(e=>e.id===evId).actions.find(a=>a.id===actionId);
+  if(a)a.done=!a.done;renderEvent();renderSidebar();
+}
+function openAddAction(evId){
+  if(!canEdit())return;
+  showGenModal('Add action','',
+    '<div class="modal-field"><label>Task</label><input id="gm-text" placeholder="e.g. Confirm band is booked"/></div><div class="modal-field-row"><div class="modal-field"><label>Owner</label><select id="gm-owner"><option>Brendon</option><option>Manager</option><option>Kitchen</option><option>Reservations</option></select></div><div class="modal-field"><label>Due date</label><input type="date" id="gm-due"/></div></div>',
+    '<button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveAddAction(\''+evId+'\')">Add</button>');
+}
+function saveAddAction(evId){
+  const text=document.getElementById('gm-text').value.trim();if(!text)return;
+  EVENTS.find(e=>e.id===evId).actions.push({id:'a'+Date.now(),text,done:false,owner:document.getElementById('gm-owner').value,due:document.getElementById('gm-due').value});
+  closeModal('gen-modal');renderEvent();renderSidebar();
+}
+function deleteAction(evId,actionId){
+  if(!canEdit())return;
+  const ev=EVENTS.find(e=>e.id===evId);ev.actions=ev.actions.filter(a=>a.id!==actionId);renderEvent();renderSidebar();
+}
+function renderChecklist(ev){
+  const today=new Date().toISOString().slice(0,10);
+  const canE=canEdit();
+  const items=ev.actions.map(a=>{
+    const isLate=a.due&&a.due<today&&!a.done;
+    return '<div class="chk-item'+(a.done?' done':'')+(isLate?' overdue':'')+'"><div class="chk-cb'+(a.done?' checked':'')+'" onclick="toggleAction(\''+ev.id+'\',\''+a.id+'\')">'+IC.check+'</div><div class="chk-body"><div class="chk-text">'+a.text+'</div><div class="chk-meta">'+(a.owner?'<span class="chk-owner">'+a.owner+'</span>':'')+(a.due?'<span class="chk-due'+(isLate?' late':'')+'">'+a.due+'</span>':'')+'</div></div>'+(canE?'<div class="chk-actions"><button class="chk-act-btn" onclick="deleteAction(\''+ev.id+'\',\''+a.id+'\')" title="Delete">x</button></div>':'')+'</div>';
+  }).join('');
+  const done=ev.actions.filter(a=>a.done).length;
+  const total=ev.actions.length;
+  const addBtn=canE?'<button class="add-chk-btn" onclick="openAddAction(\''+ev.id+'\')">'+IC.plus+' Add action</button>':'';
+  return (total?'<div style="font-size:12px;color:var(--ink3);margin-bottom:8px">'+done+' of '+total+' completed</div>':'')+'<div class="checklist">'+(items||'<div style="font-size:13px;color:var(--ink3);font-style:italic;padding:8px 0">No actions yet</div>')+'</div>'+addBtn+notesArea(ev.id,'detail','Notes');
+}
+
+// BUDGET
+function renderBudget(ev){
+  const sn=computeSnapshot(ev);
+  const canE=canEdit();
+  const paxStr=ev.pax||'';const soldStr=ev.paxSold||'';
+  const pct=paxStr&&soldStr?Math.min(100,Math.round(parseInt(soldStr)/parseInt(paxStr)*100)):0;
+  let snap='<div class="snapshot">';
+  if(canE){
+    snap+='<div class="snap-card snap-ok editable" onclick="editSnapField(\''+ev.id+'\',\'price\')" title="Tap to edit"><div class="snap-label">Ticket price</div><div class="snap-val">'+(ev.price||'Not set')+'</div><div class="snap-sub">per person ✎</div></div>';
+    snap+='<div class="snap-card'+((!ev.foodAlloc||ev.foodAlloc==='TBC'||ev.foodAlloc==='—')?' snap-warn':'')+' editable" onclick="editSnapField(\''+ev.id+'\',\'foodAlloc\')" title="Tap to edit"><div class="snap-label">Food allocation</div><div class="snap-val">'+(ev.foodAlloc||'TBC')+'</div><div class="snap-sub">per person ✎</div></div>';
+    snap+='<div class="snap-card'+(!paxStr?' snap-warn':'')+' editable" onclick="editSnapField(\''+ev.id+'\',\'pax\')" title="Tap to set"><div class="snap-label">PAX / Capacity</div><div class="snap-val">'+(paxStr||'Not set')+'</div><div class="snap-sub">'+(paxStr?'expected covers ✎':'tap to set ✎')+'</div></div>';
+    snap+='<div class="snap-card editable" onclick="editSnapField(\''+ev.id+'\',\'paxSold\')" title="Tap to update"><div class="snap-label">Tickets sold</div><div class="snap-val">'+(soldStr||'—')+'</div>'+(paxStr&&soldStr?'<div class="tp-bar"><div class="tp-fill tp-'+ev.venue+'" style="width:'+pct+'%"></div></div>':'')+'<div class="snap-sub">'+(paxStr?pct+'% sold ✎':'set PAX first ✎')+'</div></div>';
+  } else {
+    snap+='<div class="snap-card snap-ok"><div class="snap-label">Ticket price</div><div class="snap-val">'+(ev.price||'—')+'</div></div>';
+    snap+='<div class="snap-card'+((!ev.foodAlloc||ev.foodAlloc==='TBC')?' snap-warn':'')+'"><div class="snap-label">Food allocation</div><div class="snap-val">'+(ev.foodAlloc||'TBC')+'</div></div>';
+    snap+='<div class="snap-card'+(!paxStr?' snap-warn':'')+'"><div class="snap-label">PAX</div><div class="snap-val">'+(paxStr||'Not set')+'</div></div>';
+    snap+='<div class="snap-card"><div class="snap-label">Tickets sold</div><div class="snap-val">'+(soldStr||'—')+'</div></div>';
+  }
+  snap+='</div>';
+  const bFood=sn.foodAlloc&&sn.pax?'$'+(sn.foodAlloc*sn.pax).toFixed(0):'—';
+  const bRev=sn.price&&sn.pax?'$'+(sn.price*sn.pax).toFixed(0):'—';
+  const aRev=ev.actual.revenue?'$'+ev.actual.revenue:'—';
+  const aFood=ev.actual.food?'$'+ev.actual.food:'—';
+  const revVar=ev.actual.revenue&&sn.budgetRevenue?ev.actual.revenue-sn.budgetRevenue:null;
+  const foodVar=ev.actual.food&&sn.budgetFood?sn.budgetFood-ev.actual.food:null;
+  let budget='<div class="budget-grid"><div class="budget-card"><div class="budget-label">Revenue</div><div class="budget-row"><span>Budgeted</span><span>'+bRev+'</span></div><div class="budget-row"><span>Actual</span><span>'+aRev+'</span></div>'+(revVar!==null?'<div class="budget-row"><span>Variance</span><span class="'+(revVar>=0?'variance-pos':'variance-neg')+'">'+(revVar>=0?'+':'')+'$'+revVar+'</span></div>':'')+'</div><div class="budget-card"><div class="budget-label">Food cost</div><div class="budget-row"><span>Budgeted</span><span>'+bFood+'</span></div><div class="budget-row"><span>Actual</span><span>'+aFood+'</span></div>'+(foodVar!==null?'<div class="budget-row"><span>Saving</span><span class="'+(foodVar>=0?'variance-pos':'variance-neg')+'">'+(foodVar>=0?'+':'')+'$'+foodVar+'</span></div>':'')+'</div></div>';
+  if(!sn.pax||!sn.price)budget+='<div class="budget-note">Set PAX and ticket price to see budget projections</div>';
+  if(ev.entertainment.length){budget+='<div style="margin-top:10px;font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Entertainment</div>';budget+=ev.entertainment.map(e=>'<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line)"><span>'+e.name+'</span><span style="color:var(--ink3)">'+(e.fee||'TBC')+'</span></div>').join('');}
+  return snap+budget;
+}
+
+// ENTERTAINMENT
+function renderEntertainment(ev){
+  const canE=canEdit();
+  const cards=ev.entertainment.map(e=>'<div class="ent-card"><div class="ent-hdr"><span class="ent-name">'+e.name+'</span><span class="ent-confirmed '+(e.confirmed?'ent-yes':'ent-no')+'">'+(e.confirmed?'Confirmed':'TBC')+'</span>'+(canE?'<button class="row-action-btn" onclick="editEntertainment(\''+ev.id+'\',\''+e.id+'\')">Edit</button>':'')+'</div><div class="ent-row"><span>Role</span><span>'+(e.role||'—')+'</span></div><div class="ent-row"><span>Fee</span><span>'+(e.fee||'TBC')+'</span></div>'+(e.deposit?'<div class="ent-row"><span>Deposit paid</span><span>'+e.deposit+'</span></div>':'')+(e.notes?'<div style="font-size:12px;color:var(--ink3);margin-top:6px;font-style:italic">'+e.notes+'</div>':'')+'</div>').join('');
+  const addBtn=canE?'<button class="add-ent-btn" onclick="addEntertainment(\''+ev.id+'\')">'+IC.plus+' Add performer / entertainment</button>':'';
+  return (cards||'<div style="font-size:13px;color:var(--ink3);font-style:italic;padding:4px 0">No entertainment added yet</div>')+addBtn+notesArea(ev.id,'bev','Entertainment notes');
+}
+function addEntertainment(evId){
+  if(!canEdit())return;
+  showGenModal('Add entertainment','',
+    '<div class="modal-field-row"><div class="modal-field"><label>Name / act</label><input id="gm-en" placeholder="e.g. Jazz trio"/></div><div class="modal-field"><label>Role</label><input id="gm-er" placeholder="e.g. Live music"/></div></div><div class="modal-field-row"><div class="modal-field"><label>Fee</label><input id="gm-ef" placeholder="e.g. $800"/></div><div class="modal-field"><label>Deposit paid</label><input id="gm-ed" placeholder="e.g. $200"/></div></div><div class="modal-field"><label>Confirmed?</label><select id="gm-ec"><option value="false">Not yet confirmed</option><option value="true">Confirmed</option></select></div><div class="modal-field"><label>Notes</label><textarea id="gm-eno" placeholder="Contract details, contact info..."></textarea></div>',
+    '<button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveAddEnt(\''+evId+'\')">Add</button>');
+}
+function saveAddEnt(evId){
+  EVENTS.find(e=>e.id===evId).entertainment.push({id:'e'+Date.now(),name:document.getElementById('gm-en').value.trim(),role:document.getElementById('gm-er').value.trim(),fee:document.getElementById('gm-ef').value.trim(),deposit:document.getElementById('gm-ed').value.trim(),confirmed:document.getElementById('gm-ec').value==='true',notes:document.getElementById('gm-eno').value.trim()});
+  closeModal('gen-modal');renderEvent();
+}
+function editEntertainment(evId,entId){
+  if(!canEdit())return;
+  const e=EVENTS.find(ev=>ev.id===evId).entertainment.find(e=>e.id===entId);
+  showGenModal('Edit entertainment','',
+    '<div class="modal-field-row"><div class="modal-field"><label>Name / act</label><input id="gm-en" value="'+(e.name||'')+'"/></div><div class="modal-field"><label>Role</label><input id="gm-er" value="'+(e.role||'')+'"/></div></div><div class="modal-field-row"><div class="modal-field"><label>Fee</label><input id="gm-ef" value="'+(e.fee||'')+'"/></div><div class="modal-field"><label>Deposit paid</label><input id="gm-ed" value="'+(e.deposit||'')+'"/></div></div><div class="modal-field"><label>Confirmed?</label><select id="gm-ec"><option value="false"'+(!e.confirmed?' selected':'')+'>Not yet confirmed</option><option value="true"'+(e.confirmed?' selected':'')+'>Confirmed</option></select></div><div class="modal-field"><label>Notes</label><textarea id="gm-eno">'+(e.notes||'')+'</textarea></div>',
+    '<button class="modal-btn danger" onclick="deleteEnt(\''+evId+'\',\''+entId+'\')">Delete</button><button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveEditEnt(\''+evId+'\',\''+entId+'\')">Save</button>');
+}
+function saveEditEnt(evId,entId){
+  const e=EVENTS.find(ev=>ev.id===evId).entertainment.find(e=>e.id===entId);
+  e.name=document.getElementById('gm-en').value.trim();e.role=document.getElementById('gm-er').value.trim();e.fee=document.getElementById('gm-ef').value.trim();e.deposit=document.getElementById('gm-ed').value.trim();e.confirmed=document.getElementById('gm-ec').value==='true';e.notes=document.getElementById('gm-eno').value.trim();
+  closeModal('gen-modal');renderEvent();
+}
+function deleteEnt(evId,entId){
+  if(!confirm('Delete this?'))return;
+  const ev=EVENTS.find(e=>e.id===evId);ev.entertainment=ev.entertainment.filter(e=>e.id!==entId);
+  closeModal('gen-modal');renderEvent();
+}
+
+// RUN SHEET
+const RS_TYPES={setup:{label:'Setup',cls:'rst-setup'},service:{label:'Service',cls:'rst-service'},entertain:{label:'Entertainment',cls:'rst-entertain'},close:{label:'Close',cls:'rst-close'}};
+function renderRunsheet(ev){
+  const canE=canEdit();
+  const rows=ev.runsheet.map(r=>{const t=RS_TYPES[r.type]||RS_TYPES.service;return '<div class="rs-item"><div class="rs-time">'+r.time+'</div><div class="rs-body"><div class="rs-title">'+r.title+' <span class="rs-type '+t.cls+'">'+t.label+'</span></div>'+(r.note?'<div class="rs-note">'+r.note+'</div>':'')+'</div>'+(canE?'<button class="row-action-btn" onclick="editRS(\''+ev.id+'\',\''+r.id+'\')">Edit</button>':'')+'</div>';}).join('');
+  const addBtn=canE?'<button class="add-rs-btn" onclick="addRS(\''+ev.id+'\')">'+IC.plus+' Add run sheet item</button>':'';
+  return '<div class="run-sheet">'+(rows||'<div style="font-size:13px;color:var(--ink3);font-style:italic;padding:4px 0">No run sheet items yet</div>')+'</div>'+addBtn+notesArea(ev.id,'rs','Run sheet notes');
+}
+function addRS(evId){
+  if(!canEdit())return;
+  showGenModal('Add run sheet item','',
+    '<div class="modal-field-row"><div class="modal-field"><label>Time</label><input id="gm-rt" placeholder="e.g. 6:30 PM"/></div><div class="modal-field"><label>Type</label><select id="gm-rty"><option value="setup">Setup</option><option value="service" selected>Service</option><option value="entertain">Entertainment</option><option value="close">Close</option></select></div></div><div class="modal-field"><label>Title</label><input id="gm-rti" placeholder="e.g. Course 2 served"/></div><div class="modal-field"><label>Note (optional)</label><input id="gm-rn" placeholder="e.g. Kimchi spring roll and duck buns"/></div>',
+    '<button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveAddRS(\''+evId+'\')">Add</button>');
+}
+function saveAddRS(evId){
+  const ev=EVENTS.find(e=>e.id===evId);
+  ev.runsheet.push({id:'r'+Date.now(),time:document.getElementById('gm-rt').value.trim(),title:document.getElementById('gm-rti').value.trim(),note:document.getElementById('gm-rn').value.trim(),type:document.getElementById('gm-rty').value});
+  ev.runsheet.sort((a,b)=>a.time.localeCompare(b.time));
+  closeModal('gen-modal');renderEvent();
+}
+function editRS(evId,rId){
+  if(!canEdit())return;
+  const r=EVENTS.find(e=>e.id===evId).runsheet.find(r=>r.id===rId);
+  showGenModal('Edit run sheet item','',
+    '<div class="modal-field-row"><div class="modal-field"><label>Time</label><input id="gm-rt" value="'+(r.time||'')+'"/></div><div class="modal-field"><label>Type</label><select id="gm-rty"><option value="setup"'+(r.type==='setup'?' selected':'')+'>Setup</option><option value="service"'+(r.type==='service'?' selected':'')+'>Service</option><option value="entertain"'+(r.type==='entertain'?' selected':'')+'>Entertainment</option><option value="close"'+(r.type==='close'?' selected':'')+'>Close</option></select></div></div><div class="modal-field"><label>Title</label><input id="gm-rti" value="'+(r.title||'')+'"/></div><div class="modal-field"><label>Note</label><input id="gm-rn" value="'+(r.note||'')+'"/></div>',
+    '<button class="modal-btn danger" onclick="deleteRS(\''+evId+'\',\''+rId+'\')">Delete</button><button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveEditRS(\''+evId+'\',\''+rId+'\')">Save</button>');
+}
+function saveEditRS(evId,rId){
+  const r=EVENTS.find(e=>e.id===evId).runsheet.find(r=>r.id===rId);
+  r.time=document.getElementById('gm-rt').value.trim();r.title=document.getElementById('gm-rti').value.trim();r.note=document.getElementById('gm-rn').value.trim();r.type=document.getElementById('gm-rty').value;
+  EVENTS.find(e=>e.id===evId).runsheet.sort((a,b)=>a.time.localeCompare(b.time));
+  closeModal('gen-modal');renderEvent();
+}
+function deleteRS(evId,rId){
+  if(!confirm('Delete this item?'))return;
+  const ev=EVENTS.find(e=>e.id===evId);ev.runsheet=ev.runsheet.filter(r=>r.id!==rId);closeModal('gen-modal');renderEvent();
+}
+
+// ALLERGENS
+function renderAllergens(ev){
+  const items=ev.food.filter(i=>!i.s&&i.d);
+  if(!items.length)return'<div style="font-size:13px;color:var(--ink3);font-style:italic">Add food menu items first to track allergens</div>';
+  const canE=canEdit();
+  const short=ALLERGENS.map(a=>a.slice(0,4));
+  const legend='<div class="allergen-legend"><span><span class="al-dot" style="background:var(--flag-text);display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px"></span>Contains</span><span><span class="al-dot" style="background:var(--line);display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px"></span>Clear</span></div>';
+  const hdr='<thead><tr><th style="min-width:120px">Dish</th>'+short.map(s=>'<th style="width:28px;text-align:center;padding:4px 2px">'+s+'</th>').join('')+'</tr></thead>';
+  const rows=items.map(item=>{
+    const idx=ev.food.indexOf(item);
+    const dots=ALLERGENS.map(al=>{
+      const has=item.allergens&&item.allergens[al];
+      return '<td style="text-align:center"><div class="allergen-dot'+(has?' active':'')+'"'+(canE?' onclick="toggleAllergen(\''+ev.id+'\','+idx+',\''+al+'\')"':'')+' title="'+al+'">'+(has?'✓':'')+'</div></td>';
+    }).join('');
+    return '<tr><td class="dish-col">'+(item.d||item.l||'—')+'</td>'+dots+'</tr>';
+  }).join('');
+  return legend+'<div style="overflow-x:auto"><table class="allergen-tbl">'+hdr+'<tbody>'+rows+'</tbody></table></div>';
+}
+function toggleAllergen(evId,itemIdx,allergen){
+  if(!canEdit())return;
+  const item=EVENTS.find(e=>e.id===evId).food[itemIdx];
+  if(!item.allergens)item.allergens={};
+  item.allergens[allergen]=!item.allergens[allergen];renderEvent();
+}
+
+// MENU TABLE
+function mTbl(items,cols,evId,type){
+  const canE=canEdit();
+  const rows=items&&items.length?items.map((it,i)=>{
+    const editBtn=canE?'<button class="row-action-btn" onclick="openRowModal(\''+evId+'\',\''+type+'\','+i+')">Edit</button>':'';
+    if(it.s)return '<tr class="sr"><td colspan="'+(canE?4:3)+'">'+it.l+'</td>'+(canE?'<td class="ac">'+editBtn+'</td>':'')+'</tr>';
+    return '<tr><td class="cc">'+(it.l||'')+'</td><td>'+(it.d||'')+'</td><td class="nc">'+(it.n||'')+'</td>'+(canE?'<td class="ac">'+editBtn+'</td>':'')+'</tr>';
+  }).join(''):'<tr><td colspan="'+(canE?4:3)+'" style="padding:14px;text-align:center;color:var(--ink3);font-style:italic;font-size:13px">Nothing added yet</td></tr>';
+  const thX=canE?'<th style="width:60px"></th>':'';
+  const addBtn=canE?'<button class="add-row-btn" onclick="openAddRow(\''+evId+'\',\''+type+'\')">'+IC.plus+' Add '+(type==='food'?'food item':'beverage')+'</button>':'';
+  return '<table class="mtbl"><thead><tr>'+cols.map(c=>'<th>'+c+'</th>').join('')+thX+'</tr></thead><tbody>'+rows+'</tbody></table>'+addBtn;
+}
+function openAddRow(evId,type){
+  if(!canEdit())return;
+  const isFood=type==='food';
+  showGenModal('Add '+(isFood?'food item':'beverage'),'',
+    '<div class="modal-field"><label>'+(isFood?'Course / label':'Timing')+'</label><input id="gm-rl" placeholder="'+(isFood?'e.g. Course 1, Sides':'e.g. Arrival, Course 2')+'"/></div><div class="modal-field"><label>'+(isFood?'Dish / item':'Beverage')+'</label><input id="gm-rd" placeholder="'+(isFood?'e.g. Beef cheeks, XO sauce':'e.g. Pinot Noir 2023')+'"/></div><div class="modal-field"><label>Note (optional)</label><input id="gm-rn" placeholder="'+(isFood?'e.g. Dietary info':'e.g. Supplier, vintage')+'"/></div><div class="modal-field" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="gm-rs" style="width:auto;margin:0"/><label for="gm-rs" style="margin:0;font-size:13px">Section header (e.g. CANAPES, MAINS)</label></div>',
+    '<button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveAddRow(\''+evId+'\',\''+type+'\')">Add</button>');
+}
+function saveAddRow(evId,type){
+  const ev=EVENTS.find(e=>e.id===evId);
+  const isSection=document.getElementById('gm-rs').checked;
+  if(isSection)ev[type].push({s:1,l:document.getElementById('gm-rl').value.trim(),allergens:{}});
+  else ev[type].push({l:document.getElementById('gm-rl').value.trim(),d:document.getElementById('gm-rd').value.trim(),n:document.getElementById('gm-rn').value.trim(),allergens:{}});
+  closeModal('gen-modal');renderEvent();
+}
+function openRowModal(evId,type,idx){
+  if(!canEdit())return;
+  const ev=EVENTS.find(e=>e.id===evId);const item=ev[type][idx];const isSection=!!item.s;const isFood=type==='food';
+  showGenModal(isSection?'Edit section header':'Edit item','',
+    isSection?'<div class="modal-field"><label>Section heading</label><input id="gm-rl" value="'+(item.l||'')+'"/></div>':'<div class="modal-field"><label>'+(isFood?'Course / label':'Timing')+'</label><input id="gm-rl" value="'+(item.l||'')+'"/></div><div class="modal-field"><label>'+(isFood?'Dish / item':'Beverage')+'</label><input id="gm-rd" value="'+(item.d||'')+'"/></div><div class="modal-field"><label>Note (optional)</label><input id="gm-rn" value="'+(item.n||'')+'"/></div>',
+    '<button class="modal-btn danger" onclick="deleteRow(\''+evId+'\',\''+type+'\','+idx+')">Delete</button><button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveRow(\''+evId+'\',\''+type+'\','+idx+','+isSection+')">Save</button>');
+}
+function saveRow(evId,type,idx,isSection){
+  const item=EVENTS.find(e=>e.id===evId)[type][idx];
+  item.l=document.getElementById('gm-rl').value.trim();
+  if(!isSection){item.d=(document.getElementById('gm-rd')||{value:''}).value.trim();item.n=(document.getElementById('gm-rn')||{value:''}).value.trim();}
+  closeModal('gen-modal');renderEvent();
+}
+function deleteRow(evId,type,idx){
+  if(!confirm('Delete this item?'))return;
+  EVENTS.find(e=>e.id===evId)[type].splice(idx,1);closeModal('gen-modal');renderEvent();
+}
+
+// BOOKING INFO
+function renderBookingInfo(ev){
+  return '<div class="booking-info">'+editableField(ev.id,'bookingStatus',ev.bookingStatus,'Status')+editableField(ev.id,'bookingChannel',ev.bookingChannel,'Channel')+editableField(ev.id,'bookingUrl',ev.bookingUrl,'Booking URL')+editableField(ev.id,'bookingCutoff',ev.bookingCutoff,'Closes when')+editableField(ev.id,'staffing',ev.staffing,'Staffing')+'</div>'+notesArea(ev.id,'detail','Additional notes');
+}
+
+// POST EVENT
+function renderPostEvent(ev){
+  const canE=canEdit();
+  const isCompleted=ev.status==='completed';
+  if(!isCompleted&&!canE)return'<div style="font-size:13px;color:var(--ink3);font-style:italic">Debrief unlocks when event is marked Completed</div>';
+  const a=ev.actual;
+  const sn=computeSnapshot(ev);
+  const revVar=a.revenue&&sn.budgetRevenue?a.revenue-sn.budgetRevenue:null;
+  const postCards='<div class="post-grid"><div class="post-card"><div class="post-label">Final covers</div><div class="post-val">'+(a.covers||'—')+'</div>'+(canE?'<button class="notes-edit-btn" style="margin-top:6px" onclick="editActual(\''+ev.id+'\',\'covers\',\'Final covers\')">'+IC.edit+' Edit</button>':'')+'</div><div class="post-card"><div class="post-label">Actual revenue</div><div class="post-val">'+(a.revenue?'$'+a.revenue:'—')+'</div>'+(revVar!==null?'<div class="post-sub">vs budget: '+(revVar>=0?'+':'')+'$'+revVar+'</div>':'')+(canE?'<button class="notes-edit-btn" style="margin-top:6px" onclick="editActual(\''+ev.id+'\',\'revenue\',\'Actual revenue\')">'+IC.edit+' Edit</button>':'')+'</div><div class="post-card"><div class="post-label">Actual food cost</div><div class="post-val">'+(a.food?'$'+a.food:'—')+'</div>'+(canE?'<button class="notes-edit-btn" style="margin-top:6px" onclick="editActual(\''+ev.id+'\',\'food\',\'Actual food cost\')">'+IC.edit+' Edit</button>':'')+'</div><div class="post-card"><div class="post-label">Entertainment cost</div><div class="post-val">'+(a.entertainment?'$'+a.entertainment:'—')+'</div>'+(canE?'<button class="notes-edit-btn" style="margin-top:6px" onclick="editActual(\''+ev.id+'\',\'entertainment\',\'Entertainment cost\')">'+IC.edit+' Edit</button>':'')+'</div></div>';
+  return (isCompleted?postCards:'<div class="budget-note">Mark event as Completed to enter debrief actuals</div>')+notesArea(ev.id,'rs','What worked / what to change next time');
+}
+function editActual(evId,field,label){
+  if(!canEdit())return;
+  const ev=EVENTS.find(e=>e.id===evId);
+  showGenModal('Edit '+label,'','<div class="modal-field"><label>'+label+'</label><input id="gm-actval" type="number" value="'+(ev.actual[field]||'')+'"/></div>',
+    '<button class="modal-btn secondary" onclick="closeModal(\'gen-modal\')">Cancel</button><button class="modal-btn primary" onclick="saveActual(\''+evId+'\',\''+field+'\')">Save</button>');
+}
+function saveActual(evId,field){
+  EVENTS.find(e=>e.id===evId).actual[field]=parseFloat(document.getElementById('gm-actval').value)||0;
+  closeModal('gen-modal');renderEvent();
+}
+
+// ADD EVENT
+function confirmAddEvent(){
+  const v=document.getElementById('em-venue').value;
+  const name=document.getElementById('em-name').value.trim();
+  const date=document.getElementById('em-date').value.trim();
+  const ds=document.getElementById('em-ds').value.trim();
+  if(!name||!date||!ds){alert('Please fill in venue, name, date and sort date.');return;}
+  EVENTS.push({id:'evt-'+Date.now(),venue:v,date,ds,name,
+    price:document.getElementById('em-price').value.trim()||'TBC',
+    foodAlloc:document.getElementById('em-food').value.trim()||'TBC',
+    pax:'',paxSold:'',type:document.getElementById('em-type').value,
+    style:document.getElementById('em-style').value,status:'planning',
+    dual:document.getElementById('em-dual').value==='true',
+    bookingStatus:'On sale',bookingChannel:'Now Book It',bookingUrl:'',
+    bookingCutoff:'Sold out or called by management',staffing:'',suggest:'',
+    notes_detail:'',notes_food:'',notes_bev:'',notes_rs:'',
+    actions:[],entertainment:[],runsheet:[],
+    actual:{covers:0,revenue:0,food:0,entertainment:0,notes:''},
+    food:[],bev:[]});
+  closeModal('event-modal');venue=v;
+  activeId=EVENTS[EVENTS.length-1].id;viewState='event';
+  updateVenueSwitcher();renderSidebar();renderEvent();
+}
+function manageUsers(){alert('To change PINs or add users, open this HTML file in a text editor and update the USERS array near the top of the script.');}
+
+// MAIN RENDER
+function renderEvent(){
+  const ev=EVENTS.find(e=>e.id===activeId);if(!ev)return;
+  const vc=ev.venue;const other=vc==='chu'?'wu':'chu';const sn=computeSnapshot(ev);const canE=canEdit();
+  let h='';
+  if(ev.dual)h+='<div class="banner banner-dual">'+IC.alert+'<span>Both venues running events on this date — cross-venue staffing and reservations coordination required.</span></div>';
+  if(ev.suggest)h+='<div class="banner banner-suggest">'+IC.bulb+'<span>'+ev.suggest+'</span></div>';
+  h+='<div class="event-eyebrow eyebrow-'+vc+'">'+VN[vc]+' &nbsp;&middot;&nbsp; '+ev.date+' <button class="switch-venue-link" onclick="switchVenue(\''+other+'\')">Switch to '+VN[other]+' &rarr;</button></div>';
+  h+='<div class="event-title-row"><div class="event-title">'+ev.name+'</div>'+(canE?'<select class="status-select" onchange="changeStatus(\''+ev.id+'\',this.value)">'+Object.entries(STATUSES).map(([k,v])=>'<option value="'+k+'"'+(ev.status===k?' selected':'')+'>'+v.label+'</option>').join('')+'</select>':'<span class="evt-status '+(STATUSES[ev.status]?.cls||'')+'" style="font-size:12px;padding:4px 10px">'+(STATUSES[ev.status]?.label||'')+'</span>')+'</div>';
+  h+='<div class="tag-row"><span class="etag">'+(ev.type||'Ticketed')+'</span><span class="etag">'+(ev.style||'Sit-down')+'</span>'+(ev.dual?'<span class="etag" style="background:var(--flag-bg);color:var(--flag-text);border-color:var(--flag-border)">Both venues</span>':'')+(ev.entertainment.length?'<span class="etag" style="background:var(--purple-bg);color:var(--purple-text);border-color:var(--purple-border)">Entertainment</span>':'')+'</div>';
+  h+='<div class="hero-div"></div>';
+  const pendingActions=ev.actions.filter(a=>!a.done);
+  if(pendingActions.length){const today=new Date().toISOString().slice(0,10);const overdue=pendingActions.filter(a=>a.due&&a.due<today).length;h+='<div class="banner banner-flag">'+IC.warn+'<span>'+pendingActions.length+' action'+(pendingActions.length>1?'s':'')+' outstanding'+(overdue?' · '+overdue+' overdue':'')+'</span></div>';}
+  h+='<div style="height:10px"></div>';
+  const bSub=sn.pax&&sn.price?'$'+(sn.price*sn.pax).toLocaleString()+' projected':'Set PAX and price to project';
+  h+=accord(ev.id+'-bud',IC.dollar,'Budget & tickets',bSub,renderBudget(ev),'ai-green',true);
+  const actSub=ev.actions.filter(a=>!a.done).length+' of '+ev.actions.length+' outstanding';
+  h+=accord(ev.id+'-act',IC.list,'Actions & checklist',actSub,renderChecklist(ev),'ai-warn',true);
+  h+=accord(ev.id+'-bk',IC.ticket,'Booking & operations','',renderBookingInfo(ev),'ai-neutral',false);
+  const foodSub=sn.foodCount+' items'+(ev.foodAlloc&&ev.foodAlloc!=='TBC'&&ev.foodAlloc!=='—'?' · alloc '+ev.foodAlloc:'');
+  h+=accord(ev.id+'-food',IC.food,'Food menu',foodSub,mTbl(ev.food,['Course','Item','Note'],ev.id,'food')+notesArea(ev.id,'food','Food notes'),'ai-'+vc,false);
+  h+=accord(ev.id+'-bev',IC.wine,'Beverage',sn.bevCount+' items',mTbl(ev.bev,['Timing','Beverage','Note'],ev.id,'bev')+notesArea(ev.id,'bev','Beverage notes'),'ai-'+vc,false);
+  const flaggedDishes=ev.food.filter(i=>!i.s&&Object.values(i.allergens||{}).some(Boolean)).length;
+  h+=accord(ev.id+'-alg',IC.leaf,'Allergen register',flaggedDishes+' dishes flagged',renderAllergens(ev),'ai-neutral',false);
+  if(ev.entertainment.length||canE){const entSub=ev.entertainment.length?ev.entertainment.filter(e=>e.confirmed).length+'/'+ev.entertainment.length+' confirmed':'None added';h+=accord(ev.id+'-ent',IC.music,'Entertainment & extras',entSub,renderEntertainment(ev),'ai-purple',false);}
+  h+=accord(ev.id+'-rs',IC.clock,'Run sheet',ev.runsheet.length?ev.runsheet.length+' items':'Not built yet',renderRunsheet(ev),'ai-neutral',false);
+  h+=accord(ev.id+'-post',IC.star,'Post-event debrief',ev.status==='completed'?'Completed':'Pending',renderPostEvent(ev),'ai-green',false);
+  document.getElementById('main-inner').innerHTML=h;
+}
+
+initLogin();
+</script>
+</body>
+</html>
